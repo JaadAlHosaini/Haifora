@@ -1,16 +1,7 @@
 import 'package:flutter/material.dart';
-import 'signin_screen.dart';
-import 'theme.dart';
 
 class WelcomeScreen extends StatelessWidget {
-  final VoidCallback toggleTheme;
-  final bool isDarkMode;
-
-  const WelcomeScreen({
-    super.key,
-    required this.toggleTheme,
-    required this.isDarkMode,
-  });
+  const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -36,32 +27,19 @@ class WelcomeScreen extends StatelessWidget {
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 40),
-
-              // Theme Switch Button
-              IconButton(
-                icon: Icon(
-                  isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                  size: 30,
-                  color: theme.colorScheme.primary,
-                ),
-                onPressed: toggleTheme,
-                tooltip: 'Toggle theme',
-              ),
-              const SizedBox(height: 40),
-
-              // Continue button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SignInScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: () => Navigator.pushNamed(context, '/signin'),
                   child: const Text('Continue to Sign In'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/signup'),
+                  child: const Text('Create Account'),
                 ),
               ),
             ],
