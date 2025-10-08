@@ -14,18 +14,20 @@ class AppRouter {
       case '/signup':
         return MaterialPageRoute(builder: (_) => const SignUpScreen());
       case '/home':
-        return MaterialPageRoute(builder: (_) => const HomeScreen(
-          onToggleTheme: _noop,
-          isDarkMode: false,
-        ));
+        return MaterialPageRoute(
+          builder: (_) => HomeScreen(
+            onToggleTheme: () {}, // temporary empty function
+            isDarkMode: false,    // default theme state
+          ),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(
-            body: Center(child: Text('404 — Page Not Found')),
+            body: Center(
+              child: Text('404 — Page Not Found'),
+            ),
           ),
         );
     }
   }
-
-  static void _noop() {}
 }

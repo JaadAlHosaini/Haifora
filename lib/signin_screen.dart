@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'theme.dart'; // Make sure this file exists and includes your ThemeData
+import 'package:firebase_auth/firebase_auth.dart';
+import 'theme.dart';
 import 'signup_screen.dart';
+import 'home_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -14,6 +16,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -22,12 +25,35 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  void _signIn() {
-    if (_formKey.currentState!.validate()) {
-      // TODO: Replace this with Firebase Auth login later
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Signing in... (Firebase coming soon)')),
+  Future<void> _signIn() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _loading = true);
+
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HomeScreen(
+              onToggleTheme: () {}, // placeholder, can be connected later
+              isDarkMode: false,    // default mode
+            ),
+          ),
+        );
+      }
+
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Sign in failed')),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -44,7 +70,6 @@ class _SignInScreenState extends State<SignInScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // App title or logo
                 Text(
                   'Welcome Back 👋',
                   style: theme.textTheme.headlineMedium?.copyWith(
@@ -58,12 +83,10 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // Sign-in form
                 Form(
                   key: _formKey,
                   child: Column(
                     children: [
-                      // Email field
                       TextFormField(
                         controller: _emailController,
                         decoration: const InputDecoration(
@@ -83,7 +106,6 @@ class _SignInScreenState extends State<SignInScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Password field
                       TextFormField(
                         controller: _passwordController,
                         obscureText: !_isPasswordVisible,
@@ -115,27 +137,29 @@ class _SignInScreenState extends State<SignInScreen> {
                       ),
                       const SizedBox(height: 10),
 
-                      // Forgot password
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            // TODO: Navigate to reset password page
+                            // TODO: Add password reset feature
                           },
                           child: const Text('Forgot password?'),
                         ),
                       ),
                       const SizedBox(height: 30),
 
-                      // Sign In button
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton(
-                          onPressed: _signIn,
+                          onPressed: _loading ? null : _signIn,
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: const Text('Login'),
+                          child: _loading
+                              ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                              : const Text('Login'),
                         ),
                       ),
                     ],
@@ -143,7 +167,6 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // Sign up link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -155,7 +178,9 @@ class _SignInScreenState extends State<SignInScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const SignUpScreen(),
+                          ),
                         );
                       },
                       child: const Text('Sign up'),

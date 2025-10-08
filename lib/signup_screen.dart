@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home_screen.dart';
+import 'signin_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -15,6 +16,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
 
   @override
@@ -26,42 +29,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _signUp() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+    if (!_formKey.currentState!.validate()) return;
 
-      try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+    setState(() => _isLoading = true);
 
-        // Navigate to Home after successful sign up
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HomeScreen(
-              onToggleTheme: () {},
-              isDarkMode: Theme.of(context).brightness == Brightness.dark,
-            ),
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => HomeScreen(
+            onToggleTheme: () {}, // placeholder function for now
+            isDarkMode: false,    // default to light mode
           ),
-        );
-      } on FirebaseAuthException catch (e) {
-        String message = 'An error occurred';
-        if (e.code == 'email-already-in-use') {
-          message = 'This email is already registered.';
-        } else if (e.code == 'invalid-email') {
-          message = 'Invalid email format.';
-        } else if (e.code == 'weak-password') {
-          message = 'Password should be at least 6 characters.';
-        }
+        ),
+      );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-      } finally {
-        setState(() => _isLoading = false);
+    } on FirebaseAuthException catch (e) {
+      String message = 'An error occurred';
+      if (e.code == 'email-already-in-use') {
+        message = 'This email is already registered.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email format.';
+      } else if (e.code == 'weak-password') {
+        message = 'Password should be at least 6 characters.';
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -70,9 +73,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-      ),
+      appBar: AppBar(title: const Text('Create Account')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -89,7 +90,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Email
+                // Email Field
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
@@ -111,15 +112,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Password
+                // Password Field
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(
+                  obscureText: !_isPasswordVisible,
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
@@ -132,15 +145,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Confirm password
+                // Confirm Password Field
                 TextFormField(
                   controller: _confirmPasswordController,
-                  decoration: const InputDecoration(
+                  obscureText: !_isConfirmPasswordVisible,
+                  decoration: InputDecoration(
                     labelText: 'Confirm Password',
-                    prefixIcon: Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isConfirmPasswordVisible =
+                          !_isConfirmPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please confirm your password';
@@ -153,19 +179,44 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Sign Up button
+                // Sign Up Button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _signUp,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                     child: _isLoading
                         ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                         : const Text('Sign Up'),
                   ),
+                ),
+                const SizedBox(height: 24),
+
+                // Already have an account link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Already have an account?"),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SignInScreen()),
+                        );
+                      },
+                      child: const Text('Sign in'),
+                    ),
+                  ],
                 ),
               ],
             ),
