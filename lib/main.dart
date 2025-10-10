@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 
 import 'theme.dart';
 import 'router.dart';
+import 'welcome_screen.dart';
+import 'home_screen.dart';
+import 'profile_setup_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,8 +42,39 @@ class _MyAppState extends State<MyApp> {
       darkTheme: HaiforaTheme.darkTheme,
       themeMode: _themeMode,
       debugShowCheckedModeBanner: false,
-      onGenerateRoute: AppRouter.generateRoute, // ✅ Router added
-      initialRoute: '/', // ✅ Starts on Welcome screen
+      onGenerateRoute: generateRoute, // ✅ FIXED (no AppRouter)
+      home: AuthWrapper(toggleTheme: _toggleTheme, isDarkMode: _themeMode == ThemeMode.dark),
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  final VoidCallback toggleTheme;
+  final bool isDarkMode;
+
+  const AuthWrapper({super.key, required this.toggleTheme, required this.isDarkMode});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (!snapshot.hasData) {
+          return const WelcomeScreen();
+        }
+
+        // ✅ User logged in → send to HomeScreen
+        return HomeScreen(
+          onToggleTheme: toggleTheme,
+          isDarkMode: isDarkMode,
+        );
+      },
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home_screen.dart';
 import 'signin_screen.dart';
+import 'profile_setup_screen.dart'; // ✅ new import
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -15,6 +15,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -25,6 +26,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -34,20 +36,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // Create user with Firebase Auth
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
+      // Update display name in Firebase Auth
+      await userCredential.user?.updateDisplayName(_nameController.text.trim());
+
       if (!mounted) return;
+
+      // ✅ Navigate to Profile Setup after sign-up
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => HomeScreen(
-            onToggleTheme: () {}, // placeholder function for now
-            isDarkMode: false,    // default to light mode
-          ),
-        ),
+        MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
       );
 
     } on FirebaseAuthException catch (e) {
@@ -62,6 +65,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unexpected error: $e')),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -90,7 +97,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Email Field
+                // Name field
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Full Name',
+                    prefixIcon: Icon(Icons.person_outline),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Email field
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
@@ -112,7 +136,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Password Field
+                // Password field
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
@@ -145,7 +169,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Confirm Password Field
+                // Confirm password field
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: !_isConfirmPasswordVisible,
@@ -196,12 +220,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         color: Colors.white,
                       ),
                     )
-                        : const Text('Sign Up'),
+                        : const Text('Next'),
                   ),
                 ),
                 const SizedBox(height: 24),
 
-                // Already have an account link
+                // Already have account? link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
