@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
-  final VoidCallback onToggleTheme;
+  final VoidCallback? onToggleTheme;
+
   final bool isDarkMode;
 
   const HomeScreen({

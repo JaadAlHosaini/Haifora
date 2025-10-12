@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 // Import all your screens here
-import 'welcome_screen.dart';
+import 'screens/welcome_screen.dart';
 import 'signin_screen.dart';
 import 'signup_screen.dart';
 import 'profile_setup_screen.dart';
-import 'home_screen.dart';
-import 'profile_page.dart'; // 👈 Add this import
+import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart'; // 👈 Add this import
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {

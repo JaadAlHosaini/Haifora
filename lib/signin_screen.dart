@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'theme.dart';
 import 'signup_screen.dart';
-import 'home_screen.dart';
+import 'screens/home_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -37,15 +37,7 @@ class _SignInScreenState extends State<SignInScreen> {
       );
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HomeScreen(
-              onToggleTheme: () {}, // placeholder, can be connected later
-              isDarkMode: false,    // default mode
-            ),
-          ),
-        );
+        if (mounted) Navigator.pop(context);
       }
 
     } on FirebaseAuthException catch (e) {

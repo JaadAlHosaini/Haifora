@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home_screen.dart';
+import 'screens/home_screen.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   const ProfileSetupScreen({Key? key}) : super(key: key);
@@ -98,15 +98,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
       if (!mounted) return;
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => HomeScreen(
-            onToggleTheme: () {},
-            isDarkMode: Theme.of(context).brightness == Brightness.dark,
-          ),
-        ),
-      );
+      if (!mounted) return;
+
+    // ✅ Replace entire stack and go back to AuthWrapper
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error saving profile: $e')),

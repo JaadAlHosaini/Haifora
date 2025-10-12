@@ -48,7 +48,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
 
       // ✅ Navigate to Profile Setup after sign-up
-      Navigator.pushReplacement(
+      // ✅ Navigate normally (not replacing the root)
+      await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
       );

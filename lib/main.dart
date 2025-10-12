@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:haifora/screens/main_nav_screen.dart';
 import 'firebase_options.dart';
-
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'theme.dart';
 import 'router.dart';
-import 'welcome_screen.dart';
-import 'home_screen.dart';
+import 'screens/welcome_screen.dart';
+import 'screens/home_screen.dart';
 import 'profile_setup_screen.dart';
+import 'screens/events_screen.dart';
+import 'screens/messages_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,7 +74,7 @@ class AuthWrapper extends StatelessWidget {
         }
 
         // ✅ User logged in → send to HomeScreen
-        return HomeScreen(
+        return MainNavScreen(
           onToggleTheme: toggleTheme,
           isDarkMode: isDarkMode,
         );
