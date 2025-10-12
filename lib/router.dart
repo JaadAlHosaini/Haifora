@@ -6,22 +6,26 @@ import 'signin_screen.dart';
 import 'signup_screen.dart';
 import 'profile_setup_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/profile_screen.dart'; // 👈 Add this import
+import 'screens/profile_screen.dart';
+import 'edit_profile_page.dart'; // ✏️ Edit Profile Page
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
+  // 🏠 Welcome
     case '/':
       return MaterialPageRoute(builder: (_) => const WelcomeScreen());
 
+  // 🔑 Authentication
     case '/signin':
       return MaterialPageRoute(builder: (_) => const SignInScreen());
-
     case '/signup':
       return MaterialPageRoute(builder: (_) => const SignUpScreen());
 
+  // 👤 Profile setup after signup
     case '/profileSetup':
       return MaterialPageRoute(builder: (_) => const ProfileSetupScreen());
 
+  // 🏡 Home
     case '/home':
       return MaterialPageRoute(
         builder: (_) => HomeScreen(
@@ -30,11 +34,24 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-  // 👤 Profile Page (your screen)
+  // 👥 Profile page (pass arguments safely)
     case '/profile':
-      return MaterialPageRoute(builder: (_) => const ProfilePage());
+      final args = settings.arguments as Map<String, dynamic>? ?? {};
+      final onToggleTheme = args['onToggleTheme'] as VoidCallback? ?? () {};
+      final isDarkMode = args['isDarkMode'] as bool? ?? false;
 
-  // Default → fallback to Welcome
+      return MaterialPageRoute(
+        builder: (_) => ProfilePage(
+          onToggleTheme: onToggleTheme,
+          isDarkMode: isDarkMode,
+        ),
+      );
+
+  // ✏️ Edit Profile page
+    case '/editProfile':
+      return MaterialPageRoute(builder: (_) => const EditProfilePage());
+
+  // 🚫 Default fallback
     default:
       return MaterialPageRoute(builder: (_) => const WelcomeScreen());
   }

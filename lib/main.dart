@@ -3,7 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:haifora/screens/main_nav_screen.dart';
 import 'firebase_options.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'theme.dart';
 import 'router.dart';
 import 'screens/welcome_screen.dart';
@@ -11,7 +10,6 @@ import 'screens/home_screen.dart';
 import 'profile_setup_screen.dart';
 import 'screens/events_screen.dart';
 import 'screens/messages_screen.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +29,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.light;
 
+  // ✅ Toggle between light and dark modes
   void _toggleTheme() {
     setState(() {
       _themeMode =
@@ -46,8 +45,11 @@ class _MyAppState extends State<MyApp> {
       darkTheme: HaiforaTheme.darkTheme,
       themeMode: _themeMode,
       debugShowCheckedModeBanner: false,
-      onGenerateRoute: generateRoute, // ✅ FIXED (no AppRouter)
-      home: AuthWrapper(toggleTheme: _toggleTheme, isDarkMode: _themeMode == ThemeMode.dark),
+      onGenerateRoute: generateRoute,
+      home: AuthWrapper(
+        toggleTheme: _toggleTheme,
+        isDarkMode: _themeMode == ThemeMode.dark,
+      ),
     );
   }
 }
@@ -56,7 +58,11 @@ class AuthWrapper extends StatelessWidget {
   final VoidCallback toggleTheme;
   final bool isDarkMode;
 
-  const AuthWrapper({super.key, required this.toggleTheme, required this.isDarkMode});
+  const AuthWrapper({
+    super.key,
+    required this.toggleTheme,
+    required this.isDarkMode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +79,7 @@ class AuthWrapper extends StatelessWidget {
           return const WelcomeScreen();
         }
 
-        // ✅ User logged in → send to HomeScreen
+        // ✅ Logged in → send to main navigation
         return MainNavScreen(
           onToggleTheme: toggleTheme,
           isDarkMode: isDarkMode,

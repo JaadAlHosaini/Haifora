@@ -6,8 +6,7 @@ import 'messages_screen.dart';
 import 'profile_screen.dart';
 
 class MainNavScreen extends StatefulWidget {
-  final VoidCallback? onToggleTheme;
-
+  final VoidCallback onToggleTheme;
   final bool isDarkMode;
 
   const MainNavScreen({
@@ -23,15 +22,22 @@ class MainNavScreen extends StatefulWidget {
 class _MainNavScreenState extends State<MainNavScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomeScreen(onToggleTheme: null, isDarkMode: false), // placeholder
-    EventsScreen(),
-    MessagesScreen(),
-    ProfilePage(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    // 👇 Define pages dynamically to pass theme controls
+    final List<Widget> pages = [
+      HomeScreen(
+        onToggleTheme: widget.onToggleTheme,
+        isDarkMode: widget.isDarkMode,
+      ),
+      const EventsScreen(),
+      const MessagesScreen(),
+      ProfilePage(
+        onToggleTheme: widget.onToggleTheme,
+        isDarkMode: widget.isDarkMode,
+      ),
+    ];
+
     final theme = Theme.of(context);
     final items = <Widget>[
       const Icon(Icons.home, size: 28),
@@ -42,7 +48,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
 
     return Scaffold(
       extendBody: true,
-      body: _pages[_selectedIndex],
+      body: pages[_selectedIndex],
       bottomNavigationBar: CurvedNavigationBar(
         index: _selectedIndex,
         items: items,
