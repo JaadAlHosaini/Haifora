@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'signin_screen.dart';
-import 'profile_setup_screen.dart'; // ✅ new import
+import 'profile_setup_screen.dart'; // keep this import
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -27,33 +29,50 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _nameController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
 
     try {
-      // Create user with Firebase Auth
+      // ✅ Create Firebase Auth user
       final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Update display name in Firebase Auth
-      await userCredential.user?.updateDisplayName(_nameController.text.trim());
+      final user = userCredential.user!;
+      final uid = user.uid;
 
-      if (!mounted) return;
+      // ✅ Save user details in Firestore
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'name': _nameController.text.trim(),
+        'username': _usernameController.text.trim().toLowerCase(),
+        'email': _emailController.text.trim(),
+        'photoUrl': '',
+        'friends': [],
+        'faculty': '',
+        'interests': [],
+        'createdAt': Timestamp.now(),
+      });
 
-      // ✅ Navigate to Profile Setup after sign-up
-      // ✅ Navigate normally (not replacing the root)
-      await Navigator.push(
+      // ✅ Update display name in Firebase Auth
+      await user.updateDisplayName(_nameController.text.trim());
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created successfully!')),
+      );
+
+      // ✅ Continue to Profile Setup
+      await Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
       );
-
     } on FirebaseAuthException catch (e) {
       String message = 'An error occurred';
       if (e.code == 'email-already-in-use') {
@@ -98,7 +117,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Name field
+                // 👤 Full name
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
@@ -106,16 +125,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) =>
+                  value == null || value.trim().isEmpty
+                      ? 'Please enter your name'
+                      : null,
+                ),
+                const SizedBox(height: 16),
+
+                // 🆔 Username
+                TextFormField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                    prefixIcon: Icon(Icons.alternate_email),
+                    border: OutlineInputBorder(),
+                  ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your name';
+                      return 'Please choose a username';
+                    }
+                    if (value.contains(' ')) {
+                      return 'Username cannot contain spaces';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
 
-                // Email field
+                // 📧 Email
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
@@ -137,7 +174,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Password field
+                // 🔒 Password
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
@@ -151,11 +188,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ? Icons.visibility_off
                             : Icons.visibility,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
+                      onPressed: () =>
+                          setState(() => _isPasswordVisible = !_isPasswordVisible),
                     ),
                   ),
                   validator: (value) {
@@ -170,7 +204,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Confirm password field
+                // 🔒 Confirm password
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: !_isConfirmPasswordVisible,
@@ -184,12 +218,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ? Icons.visibility_off
                             : Icons.visibility,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isConfirmPasswordVisible =
-                          !_isConfirmPasswordVisible;
-                        });
-                      },
+                      onPressed: () => setState(
+                              () => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
                     ),
                   ),
                   validator: (value) {
@@ -204,13 +234,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Sign Up Button
+                // 🧡 Sign-up button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _signUp,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: const Color(0xFFF18F01),
+                      foregroundColor: Colors.white,
                     ),
                     child: _isLoading
                         ? const SizedBox(
@@ -226,7 +258,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Already have account? link
+                // 🔁 Already have an account
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

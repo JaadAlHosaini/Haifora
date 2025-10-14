@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-// Import all your screens here
+// Import all your screens
 import 'screens/welcome_screen.dart';
 import 'signin_screen.dart';
 import 'signup_screen.dart';
 import 'profile_setup_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/profile_screen.dart';
-import 'edit_profile_page.dart'; // ✏️ Edit Profile Page
+import 'screens/profile_screen.dart'; // ✅ correct class name
+import 'edit_profile_page.dart'; // ✅ Edit Profile Page
+import 'screens/main_nav_screen.dart'; // ✅ bottom nav
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -25,29 +26,29 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case '/profileSetup':
       return MaterialPageRoute(builder: (_) => const ProfileSetupScreen());
 
-  // 🏡 Home
+  // 🏡 Home (using MainNavScreen)
     case '/home':
       return MaterialPageRoute(
-        builder: (_) => HomeScreen(
+        builder: (_) => MainNavScreen(
           onToggleTheme: () {},
           isDarkMode: false,
         ),
       );
 
-  // 👥 Profile page (pass arguments safely)
+  // 👥 Profile screen (single user)
     case '/profile':
       final args = settings.arguments as Map<String, dynamic>? ?? {};
       final onToggleTheme = args['onToggleTheme'] as VoidCallback? ?? () {};
       final isDarkMode = args['isDarkMode'] as bool? ?? false;
 
       return MaterialPageRoute(
-        builder: (_) => ProfilePage(
-          onToggleTheme: onToggleTheme,
-          isDarkMode: isDarkMode,
+        builder: (_) => ProfileScreen(
+          userId: args['userId'], // ✅ show friend’s profile if provided
+          key: UniqueKey(),
         ),
       );
 
-  // ✏️ Edit Profile page
+  // ✏️ Edit Profile
     case '/editProfile':
       return MaterialPageRoute(builder: (_) => const EditProfilePage());
 

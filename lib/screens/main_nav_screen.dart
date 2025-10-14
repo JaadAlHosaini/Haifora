@@ -3,7 +3,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'home_screen.dart';
 import 'events_screen.dart';
 import 'messages_screen.dart';
-import 'profile_screen.dart';
+import 'profile_screen.dart'; // ✅ correct class
 
 class MainNavScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -24,7 +24,9 @@ class _MainNavScreenState extends State<MainNavScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 👇 Define pages dynamically to pass theme controls
+    final theme = Theme.of(context);
+
+    // ✅ Updated to match correct screen classes
     final List<Widget> pages = [
       HomeScreen(
         onToggleTheme: widget.onToggleTheme,
@@ -32,13 +34,9 @@ class _MainNavScreenState extends State<MainNavScreen> {
       ),
       const EventsScreen(),
       const MessagesScreen(),
-      ProfilePage(
-        onToggleTheme: widget.onToggleTheme,
-        isDarkMode: widget.isDarkMode,
-      ),
+      const ProfileScreen(), // ✅ fixed from ProfilePage → ProfileScreen
     ];
 
-    final theme = Theme.of(context);
     final items = <Widget>[
       const Icon(Icons.home, size: 28),
       const Icon(Icons.event, size: 28),
