@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/friend_service.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -12,103 +11,109 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   final _auth = FirebaseAuth.instance;
-  final _friendService = FriendService();
 
   @override
   Widget build(BuildContext context) {
-    final user = _auth.currentUser;
-    if (user == null) {
-      return const Scaffold(body: Center(child: Text('Not logged in.')));
-    }
-
-    final requestsStream = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('friend_requests')
-        .snapshots();
-
-    final notificationsStream = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('notifications')
-        .snapshots();
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
-      body: Column(
-        children: [
-          Expanded(
-            child: StreamBuilder(
-              stream: requestsStream,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const CircularProgressIndicator();
-                final requests = snapshot.data!.docs;
+      appBar: AppBar(
+        title: const Text('Notifications'),
+        centerTitle: true,
+        backgroundColor: const Color(0xFFF18F01),
+        foregroundColor: Colors.white,
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('notifications')
+            .where('userId', isEqualTo: _auth.currentUser?.uid)
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          // 🌀 Loading
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                return ListView(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Friend Requests',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          // ❌ Error
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error loading notifications: ${snapshot.error}'),
+            );
+          }
+
+          // 📭 No Notifications
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
+              child: Text(
+                'No notifications yet 📭',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            );
+          }
+
+          // ✅ Notifications Found
+          final notifications = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notif = notifications[index].data() as Map<String, dynamic>;
+              final message = notif['message'] ?? notif['body'] ?? 'No message available';
+              final title = notif['title'] ?? 'Notification';
+              final timestamp = notif['timestamp'];
+              final formattedTime = timestamp != null
+                  ? (timestamp as Timestamp)
+                  .toDate()
+                  .toString()
+                  .split('.')[0]
+                  : 'Unknown time';
+
+              return Card(
+                elevation: 3,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: ListTile(
+                  leading: Container(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF18F01),
+                      shape: BoxShape.circle,
                     ),
-                    ...requests.map((req) {
-                      final data = req.data();
-                      final fromId = req.id;
-                      final fromName = data['fromName'] ?? 'Someone';
-                      return ListTile(
-                        title: Text('$fromName sent you a friend request'),
-                        trailing: Wrap(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.check, color: Colors.green),
-                              onPressed: () => _friendService.acceptFriendRequest(fromId),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close, color: Colors.red),
-                              onPressed: () => _friendService.declineFriendRequest(fromId),
-                            ),
-                          ],
+                    padding: const EdgeInsets.all(8),
+                    child: const Icon(
+                      Icons.notifications_active,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                  title: Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(message),
+                      const SizedBox(height: 4),
+                      Text(
+                        formattedTime,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
                         ),
-                      );
-                    }).toList(),
-                    const Divider(),
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Other Notifications',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    ),
-                    StreamBuilder(
-                      stream: notificationsStream,
-                      builder: (context, noteSnap) {
-                        if (!noteSnap.hasData) return const SizedBox();
-                        final notes = noteSnap.data!.docs;
-                        return Column(
-                          children: notes.map((note) {
-                            final data = note.data() as Map<String, dynamic>;
-                            final type = data['type'] ?? 'other';
-                            final fromName = data['fromName'] ?? 'User';
-                            String message;
-                            if (type == 'message') {
-                              message = 'New message from $fromName';
-                            } else if (type == 'friend_accept') {
-                              message = '$fromName accepted your request';
-                            } else {
-                              message = '$fromName sent something';
-                            }
-                            return ListTile(
-                              leading: const Icon(Icons.notifications),
-                              title: Text(message),
-                            );
-                          }).toList(),
-                        );
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }

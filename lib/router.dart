@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
-// Import all your screens
+// Import all your screens here
 import 'screens/welcome_screen.dart';
 import 'signin_screen.dart';
 import 'signup_screen.dart';
 import 'profile_setup_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/dashboard_screen.dart'; // ✅ Added Dashboard
+import 'screens/events_screen.dart';    // ✅ Added Events
+import 'screens/messages_screen.dart';  // ✅ Added Messages
+import 'edit_profile_page.dart';        // ✏️ Edit Profile Page
 import 'edit_profile_page.dart';
 import 'screens/main_nav_screen.dart';
 
@@ -19,7 +23,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   // 🔑 Authentication
     case '/signin':
       return MaterialPageRoute(builder: (_) => const SignInScreen());
-
     case '/signup':
       return MaterialPageRoute(builder: (_) => const SignUpScreen());
 
@@ -27,16 +30,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case '/profileSetup':
       return MaterialPageRoute(builder: (_) => const ProfileSetupScreen());
 
-  // 🏡 Home (using MainNavScreen)
+  // 🏡 Home
     case '/home':
       return MaterialPageRoute(
-        builder: (_) => MainNavScreen(
+        builder: (_) => HomeScreen(
           onToggleTheme: () {},
           isDarkMode: false,
         ),
       );
 
-  // 👥 Profile page
+  // 👥 Profile page (pass arguments safely)
     case '/profile':
       final args = settings.arguments as Map<String, dynamic>? ?? {};
       final onToggleTheme = args['onToggleTheme'] as VoidCallback? ?? () {};
@@ -49,11 +52,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-  // ✏️ Edit Profile
+  // ✏️ Edit Profile page
     case '/editProfile':
       return MaterialPageRoute(builder: (_) => const EditProfilePage());
 
-  // 🚫 Default fallback (handles ALL unknown routes)
+  // 🚫 Default fallback
     default:
       return MaterialPageRoute(builder: (_) => const WelcomeScreen());
   }

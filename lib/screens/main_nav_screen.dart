@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'home_screen.dart';
+import 'dashboard_screen.dart'; // ✅ Dashboard is the new home
 import 'events_screen.dart';
 import 'messages_screen.dart';
-import 'profile_screen.dart'; // ✅ correct class
+import 'profile_screen.dart';
 
 class MainNavScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -24,14 +24,9 @@ class _MainNavScreenState extends State<MainNavScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    // ✅ Updated to match correct screen classes
+    // 👇 Updated: use DashboardScreen instead of HomeScreen
     final List<Widget> pages = [
-      HomeScreen(
-        onToggleTheme: widget.onToggleTheme,
-        isDarkMode: widget.isDarkMode,
-      ),
+      const DashboardScreen(),
       const EventsScreen(),
       const MessagesScreen(),
       ProfilePage(
@@ -40,8 +35,9 @@ class _MainNavScreenState extends State<MainNavScreen> {
       ),
     ];
 
+    final theme = Theme.of(context);
     final items = <Widget>[
-      const Icon(Icons.home, size: 28),
+      const Icon(Icons.dashboard, size: 28), // 🏠 Dashboard icon
       const Icon(Icons.event, size: 28),
       const Icon(Icons.message, size: 28),
       const Icon(Icons.person, size: 28),

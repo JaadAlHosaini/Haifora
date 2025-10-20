@@ -6,10 +6,7 @@ import 'firebase_options.dart';
 import 'theme.dart';
 import 'router.dart';
 import 'screens/welcome_screen.dart';
-import 'screens/home_screen.dart';
 import 'profile_setup_screen.dart';
-import 'screens/events_screen.dart';
-import 'screens/messages_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +26,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.light;
 
-  // ✅ Toggle between light and dark modes
+  // ✅ Toggle between light and dark themes
   void _toggleTheme() {
     setState(() {
       _themeMode =
@@ -69,17 +66,19 @@ class AuthWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        // 🌀 While loading
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
+        // 🔐 Not logged in → Welcome screen
         if (!snapshot.hasData) {
           return const WelcomeScreen();
         }
 
-        // ✅ Logged in → send to main navigation
+        // ✅ Logged in → Show navigation bar (Dashboard inside it)
         return MainNavScreen(
           onToggleTheme: toggleTheme,
           isDarkMode: isDarkMode,
