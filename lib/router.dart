@@ -6,9 +6,9 @@ import 'signin_screen.dart';
 import 'signup_screen.dart';
 import 'profile_setup_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/profile_screen.dart'; // ✅ correct class name
-import 'edit_profile_page.dart'; // ✅ Edit Profile Page
-import 'screens/main_nav_screen.dart'; // ✅ bottom nav
+import 'screens/profile_screen.dart';
+import 'edit_profile_page.dart';
+import 'screens/main_nav_screen.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -19,6 +19,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   // 🔑 Authentication
     case '/signin':
       return MaterialPageRoute(builder: (_) => const SignInScreen());
+
     case '/signup':
       return MaterialPageRoute(builder: (_) => const SignUpScreen());
 
@@ -35,16 +36,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-  // 👥 Profile screen (single user)
+  // 👥 Profile page
     case '/profile':
       final args = settings.arguments as Map<String, dynamic>? ?? {};
       final onToggleTheme = args['onToggleTheme'] as VoidCallback? ?? () {};
       final isDarkMode = args['isDarkMode'] as bool? ?? false;
 
       return MaterialPageRoute(
-        builder: (_) => ProfileScreen(
-          userId: args['userId'], // ✅ show friend’s profile if provided
-          key: UniqueKey(),
+        builder: (_) => ProfilePage(
+          onToggleTheme: onToggleTheme,
+          isDarkMode: isDarkMode,
         ),
       );
 
@@ -52,7 +53,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case '/editProfile':
       return MaterialPageRoute(builder: (_) => const EditProfilePage());
 
-  // 🚫 Default fallback
+  // 🚫 Default fallback (handles ALL unknown routes)
     default:
       return MaterialPageRoute(builder: (_) => const WelcomeScreen());
   }

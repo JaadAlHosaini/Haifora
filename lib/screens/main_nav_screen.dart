@@ -34,7 +34,10 @@ class _MainNavScreenState extends State<MainNavScreen> {
       ),
       const EventsScreen(),
       const MessagesScreen(),
-      const ProfileScreen(), // ✅ fixed from ProfilePage → ProfileScreen
+      ProfilePage(
+        onToggleTheme: widget.onToggleTheme,
+        isDarkMode: widget.isDarkMode,
+      ),
     ];
 
     final items = <Widget>[
