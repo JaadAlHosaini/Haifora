@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'create_event_screen.dart'; // <-- you’ll add this later
+import 'create_event_screen.dart';
 
 class EventsScreen extends StatelessWidget {
   const EventsScreen({super.key});
@@ -15,11 +15,10 @@ class EventsScreen extends StatelessWidget {
         centerTitle: true,
       ),
 
-      // 👇 The main body stays the same
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header / welcome text
+          // Header
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
@@ -30,7 +29,7 @@ class EventsScreen extends StatelessWidget {
             ),
           ),
 
-          // Event Feed (Firestore stream)
+          // ✅ Firestore Event Feed
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -38,36 +37,60 @@ class EventsScreen extends StatelessWidget {
                   .orderBy('createdAt', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
+                // 🔍 Show Firestore or connection errors clearly
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      '⚠️ Firestore Error:\n${snapshot.error}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                }
+
+                // 🌀 While waiting for Firestore to load
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
+                // 🧩 If no data or empty collection
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(
                     child: Text('No events yet — be the first to create one!'),
                   );
                 }
 
-                final events = snapshot.data!.docs;
+                // ✅ Safely build the list
+                try {
+                  final events = snapshot.data!.docs;
 
-                return ListView.builder(
-                  itemCount: events.length,
-                  itemBuilder: (context, index) {
-                    final event = events[index];
-                    final data = event.data() as Map<String, dynamic>;
+                  return ListView.builder(
+                    itemCount: events.length,
+                    itemBuilder: (context, index) {
+                      final event = events[index];
+                      final data = event.data() as Map<String, dynamic>;
 
-                    return GestureDetector(
-                      onTap: () {
-                        // 👇 Placeholder for Event Details page (to add later)
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Event details coming soon!'),
-                          ),
-                        );
-                      },
-                      child: Card(
+                      // Convert timestamps safely
+                      String formattedDate = '';
+                      if (data['date'] != null) {
+                        if (data['date'] is Timestamp) {
+                          final date = (data['date'] as Timestamp).toDate();
+                          formattedDate =
+                          '${date.year}-${date.month}-${date.day}';
+                        } else {
+                          formattedDate = data['date'].toString();
+                        }
+                      }
+
+                      final formattedTime = data['time']?.toString() ?? '';
+
+                      return Card(
                         elevation: 3,
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -78,27 +101,30 @@ class EventsScreen extends StatelessWidget {
                             children: [
                               Text(
                                 data['title'] ?? 'Untitled Event',
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  const Icon(Icons.calendar_today_outlined, size: 16),
+                                  const Icon(Icons.calendar_today_outlined,
+                                      size: 16),
                                   const SizedBox(width: 4),
-                                  Text(data['date'] ?? ''),
+                                  Text(formattedDate),
                                   const SizedBox(width: 12),
                                   const Icon(Icons.access_time, size: 16),
                                   const SizedBox(width: 4),
-                                  Text(data['time'] ?? ''),
+                                  Text(formattedTime),
                                 ],
                               ),
                               const SizedBox(height: 8),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(Icons.location_on_outlined, size: 16),
+                                  const Icon(Icons.location_on_outlined,
+                                      size: 16),
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
@@ -114,24 +140,27 @@ class EventsScreen extends StatelessWidget {
                                 data['description'] ?? '',
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodyMedium,
+                                style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               const SizedBox(height: 12),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     '👤  ${data['createdBy'] ?? 'Unknown'}',
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: Colors.grey[600],
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(color: Colors.grey[600]),
                                   ),
                                   OutlinedButton(
                                     onPressed: () {
-                                      // 👇 Placeholder for Join button (Phase 2)
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         const SnackBar(
-                                          content: Text('Join feature coming soon!'),
+                                          content: Text(
+                                              'Join feature coming soon!'),
                                         ),
                                       );
                                     },
@@ -142,19 +171,31 @@ class EventsScreen extends StatelessWidget {
                             ],
                           ),
                         ),
+                      );
+                    },
+                  );
+                } catch (e) {
+                  // 🧱 Catch any runtime data conversion issues
+                  return Center(
+                    child: Text(
+                      '⚠️ Data parsing error:\n$e',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
-                );
+                    ),
+                  );
+                }
               },
             ),
           ),
         ],
       ),
 
-      // 👇 Floating Action Button should be here (outside the body)
+      // Floating Action Button
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 70), // 👈 move it up by 70px
+        padding: const EdgeInsets.only(bottom: 70),
         child: FloatingActionButton.extended(
           onPressed: () {
             Navigator.push(

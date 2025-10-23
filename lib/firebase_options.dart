@@ -47,29 +47,29 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAfGxwM8RUo1-F-vSJz9yL5KfKtnlnR66g',
-    appId: '1:153876333847:web:73a873e379ab6db3516352',
-    messagingSenderId: '153876333847',
-    projectId: 'haiforaapp-f3821',
-    authDomain: 'haiforaapp-f3821.firebaseapp.com',
-    storageBucket: 'haiforaapp-f3821.firebasestorage.app',
-    measurementId: 'G-ZFL7J6N8YV',
+    apiKey: 'AIzaSyAcOtSIcWc81leSKGHfq3da9fEqE36AKkM',
+    appId: '1:397709827493:web:83409558d6f780058ddc4c',
+    messagingSenderId: '397709827493',
+    projectId: 'haifora-v2',
+    authDomain: 'haifora-v2.firebaseapp.com',
+    storageBucket: 'haifora-v2.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC4syJPJcJeOLtXc7_BB6nJC_rmpY-db20',
-    appId: '1:153876333847:android:6e177268e1ed5a7b516352',
-    messagingSenderId: '153876333847',
-    projectId: 'haiforaapp-f3821',
-    storageBucket: 'haiforaapp-f3821.firebasestorage.app',
+    apiKey: 'AIzaSyBkhBhXmFbM3ymkeO2jamHL0pB6MoCaxVo',
+    appId: '1:397709827493:android:68f99bff6826f6368ddc4c',
+    messagingSenderId: '397709827493',
+    projectId: 'haifora-v2',
+    storageBucket: 'haifora-v2.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAJ2qiXXrr9gBlwRrVlJYV52CHT6pi0x3A',
-    appId: '1:153876333847:ios:b7687806f64a7776516352',
-    messagingSenderId: '153876333847',
-    projectId: 'haiforaapp-f3821',
-    storageBucket: 'haiforaapp-f3821.firebasestorage.app',
+    apiKey: 'AIzaSyD0HeIzxEoQNmz5EqzaSPaNWPjKn2qNbZI',
+    appId: '1:397709827493:ios:fe6b5e99811ba4928ddc4c',
+    messagingSenderId: '397709827493',
+    projectId: 'haifora-v2',
+    storageBucket: 'haifora-v2.firebasestorage.app',
     iosBundleId: 'com.haifora.app.haifora',
   );
+
 }

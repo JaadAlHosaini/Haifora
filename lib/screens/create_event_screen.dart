@@ -85,7 +85,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         'date': formattedDate,
         'time': formattedTime,
         'location': _locationController.text.trim(),
-        'createdBy': user.email ?? user.uid,
+        'createdBy': user.uid, // ✅ fixed
+        'participants': [user.uid],
         'createdAt': Timestamp.now(),
       });
 

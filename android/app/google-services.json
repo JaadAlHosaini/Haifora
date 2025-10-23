@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "153876333847",
-    "project_id": "haiforaapp-f3821",
-    "storage_bucket": "haiforaapp-f3821.firebasestorage.app"
+    "project_number": "397709827493",
+    "project_id": "haifora-v2",
+    "storage_bucket": "haifora-v2.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:153876333847:android:6e177268e1ed5a7b516352",
+        "mobilesdk_app_id": "1:397709827493:android:68f99bff6826f6368ddc4c",
         "android_client_info": {
           "package_name": "com.haifora.app.haifora"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyC4syJPJcJeOLtXc7_BB6nJC_rmpY-db20"
+          "current_key": "AIzaSyBkhBhXmFbM3ymkeO2jamHL0pB6MoCaxVo"
         }
       ],
       "services": {
