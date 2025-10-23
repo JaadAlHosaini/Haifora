@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'dashboard_screen.dart'; // ✅ Dashboard is the new home
+import 'dashboard_screen.dart';
 import 'events_screen.dart';
-import 'messages_screen.dart';
+import 'friends_screen.dart'; // 👈 new file you'll add next
 import 'profile_screen.dart';
 
 class MainNavScreen extends StatefulWidget {
@@ -24,24 +24,26 @@ class _MainNavScreenState extends State<MainNavScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 👇 Updated: use DashboardScreen instead of HomeScreen
+    // 👇 Define main tabs
     final List<Widget> pages = [
       const DashboardScreen(),
       const EventsScreen(),
-      const MessagesScreen(),
+      const FriendsScreen(), // ✅ replaced Messages
       ProfilePage(
         onToggleTheme: widget.onToggleTheme,
         isDarkMode: widget.isDarkMode,
       ),
     ];
 
-    final theme = Theme.of(context);
+    // 👇 Navigation icons
     final items = <Widget>[
-      const Icon(Icons.dashboard, size: 28), // 🏠 Dashboard icon
+      const Icon(Icons.dashboard, size: 28),
       const Icon(Icons.event, size: 28),
-      const Icon(Icons.message, size: 28),
+      const Icon(Icons.people, size: 28), // 👈 replaced message icon
       const Icon(Icons.person, size: 28),
     ];
+
+    final theme = Theme.of(context);
 
     return Scaffold(
       extendBody: true,

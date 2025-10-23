@@ -9,7 +9,6 @@ import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/dashboard_screen.dart'; // ✅ Added Dashboard
 import 'screens/events_screen.dart';    // ✅ Added Events
-import 'screens/messages_screen.dart';  // ✅ Added Messages
 import 'edit_profile_page.dart';        // ✏️ Edit Profile Page
 import 'edit_profile_page.dart';
 import 'screens/main_nav_screen.dart';

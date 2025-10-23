@@ -2,84 +2,73 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FriendService {
-  final _db = FirebaseFirestore.instance;
-  final _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Send a friend request
-  Future<void> sendFriendRequest(String friendEmail) async {
+  Future<void> sendFriendRequest(String friendId) async {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    // find user by email
-    final friendQuery = await _db.collection('users')
-        .where('email', isEqualTo: friendEmail)
-        .limit(1)
-        .get();
+    await _firestore.collection('friend_requests').add({
+      'from': user.uid,
+      'to': friendId,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
 
-    if (friendQuery.docs.isEmpty) {
-      throw Exception('No user found with that email.');
+  Future<void> acceptFriendRequest(String requestId, String fromId) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final batch = _firestore.batch();
+    final userRef = _firestore.collection('users').doc(user.uid);
+    final fromRef = _firestore.collection('users').doc(fromId);
+
+    batch.update(userRef, {'friends': FieldValue.arrayUnion([fromId])});
+    batch.update(fromRef, {'friends': FieldValue.arrayUnion([user.uid])});
+    batch.delete(_firestore.collection('friend_requests').doc(requestId));
+
+    await batch.commit();
+  }
+
+  Future<void> declineFriendRequest(String requestId) async {
+    await _firestore.collection('friend_requests').doc(requestId).delete();
+  }
+
+  Future<void> removeFriend(String friendId) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      print('❌ No logged-in user');
+      return;
     }
 
-    final friendId = friendQuery.docs.first.id;
-    if (friendId == user.uid) throw Exception('Cannot add yourself.');
+    final userRef = _firestore.collection('users').doc(user.uid);
+    final friendRef = _firestore.collection('users').doc(friendId);
 
-    // create a request in the friend's collection
-    await _db.collection('users').doc(friendId)
-        .collection('friend_requests')
-        .doc(user.uid)
-        .set({
-      'fromId': user.uid,
-      'fromName': user.displayName ?? 'Unknown User',
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+    try {
+      await _firestore.runTransaction((txn) async {
+        final userDoc = await txn.get(userRef);
+        final friendDoc = await txn.get(friendRef);
 
-    // add notification for the friend
-    await _db.collection('users').doc(friendId)
-        .collection('notifications')
-        .add({
-      'type': 'friend_request',
-      'fromId': user.uid,
-      'fromName': user.displayName ?? 'Unknown User',
-      'timestamp': FieldValue.serverTimestamp(),
-      'isRead': false,
-    });
+        if (!userDoc.exists) throw Exception("❌ Current user document not found");
+        if (!friendDoc.exists) throw Exception("❌ Friend document not found");
+
+        final userFriends = List<String>.from(userDoc.data()?['friends'] ?? []);
+        final friendFriends = List<String>.from(friendDoc.data()?['friends'] ?? []);
+
+        userFriends.remove(friendId);
+        friendFriends.remove(user.uid);
+
+        txn.update(userRef, {'friends': userFriends});
+        txn.update(friendRef, {'friends': friendFriends});
+      });
+
+      print('✅ Friend successfully removed');
+    } catch (e, st) {
+      print('🔥 Firestore friend removal error: $e');
+      print('📜 Stacktrace: $st');
+    }
   }
 
-  /// Accept a friend request
-  Future<void> acceptFriendRequest(String fromId) async {
-    final user = _auth.currentUser;
-    if (user == null) return;
 
-    // add each other to friends list
-    await _db.collection('users').doc(user.uid).update({
-      'friends': FieldValue.arrayUnion([fromId])
-    });
-
-    await _db.collection('users').doc(fromId).update({
-      'friends': FieldValue.arrayUnion([user.uid])
-    });
-
-    // delete the friend request
-    await _db.collection('users').doc(user.uid)
-        .collection('friend_requests').doc(fromId).delete();
-
-    // create notification for sender
-    await _db.collection('users').doc(fromId)
-        .collection('notifications')
-        .add({
-      'type': 'friend_accept',
-      'fromId': user.uid,
-      'fromName': user.displayName ?? 'Unknown User',
-      'timestamp': FieldValue.serverTimestamp(),
-      'isRead': false,
-    });
-  }
-
-  /// Decline friend request
-  Future<void> declineFriendRequest(String fromId) async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-    await _db.collection('users').doc(user.uid)
-        .collection('friend_requests').doc(fromId).delete();
-  }
 }
