@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'events_screen.dart';
-import 'profile_screen.dart';
-
+import 'messages_screen.dart'; // ✅ Added import for MessagesScreen
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -27,10 +26,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .get();
+    final userDoc =
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
     setState(() {
       userData = userDoc.data();
       isLoading = false;
@@ -73,8 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ? NetworkImage(photoUrl)
                       : null,
                   child: photoUrl == null || photoUrl.isEmpty
-                      ? const Icon(Icons.person,
-                      size: 30, color: Colors.white)
+                      ? const Icon(Icons.person, size: 30, color: Colors.white)
                       : null,
                 ),
                 const SizedBox(width: 14),
@@ -113,15 +109,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisSpacing: 10,
               children: [
                 _buildActionCard(
-                    context, Icons.event, 'Events', const EventsScreen()),
+                  context,
+                  Icons.event,
+                  'Events',
+                  const EventsScreen(),
+                ),
                 _buildActionCard(
                   context,
-                  Icons.people,
-                  'Profile',
-                  ProfilePage(
-                    onToggleTheme: () {},
-                    isDarkMode: false,
-                  ),
+                  Icons.chat_bubble_outline,
+                  'Chat',
+                  const MessagesScreen(), // ✅ Replaced Profile with Chat
                 ),
               ],
             ),
@@ -156,14 +153,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     final data = doc.data() as Map<String, dynamic>;
                     return Card(
                       elevation: 2,
-                      margin:
-                      const EdgeInsets.symmetric(vertical: 6),
+                      margin: const EdgeInsets.symmetric(vertical: 6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
-                        leading: const Icon(Icons.event,
-                            color: Color(0xFFF18F01)),
+                        leading:
+                        const Icon(Icons.event, color: Color(0xFFF18F01)),
                         title: Text(data['title'] ?? 'Untitled Event'),
                         subtitle:
                         Text('${data['date']} • ${data['location']}'),
@@ -187,8 +183,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('notifications')
-                  .where('userId',
-                  isEqualTo: _auth.currentUser!.uid)
+                  .where('userId', isEqualTo: _auth.currentUser!.uid)
                   .orderBy('timestamp', descending: true)
                   .limit(3)
                   .snapshots(),
@@ -207,8 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     return ListTile(
                       leading: const Icon(Icons.notifications_active,
                           color: Color(0xFFF18F01)),
-                      title:
-                      Text(data['title'] ?? 'Notification'),
+                      title: Text(data['title'] ?? 'Notification'),
                       subtitle: Text(data['body'] ?? ''),
                     );
                   }).toList(),
@@ -224,14 +218,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildActionCard(
       BuildContext context, IconData icon, String label, Widget page) {
     return InkWell(
-      onTap: () =>
-          Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => page),
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFF6AE2D).withOpacity(0.15),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-              color: const Color(0xFFF18F01), width: 1.2),
+          border: Border.all(color: const Color(0xFFF18F01), width: 1.2),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
